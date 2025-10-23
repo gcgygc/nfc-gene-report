@@ -3,197 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gene报查询</title>
+    <title>Gene新闻头条</title>
     <style>
+        /* --- 全局样式 --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* --- 初始选择界面 --- */
+        #selection-container {
+            padding: 40px 20px;
             text-align: center;
-            margin-top: 50px;
-            background-color: #f4f4f9;
+        }
+        #selection-container h1 {
+            font-size: 28px;
             color: #333;
+            margin-bottom: 30px;
         }
-        .container {
-            max-width: 90%;
-            margin: 0 auto;
+        .category-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        h2 {
-            color: #444;
-        }
-        .button {
-            padding: 12px 25px;
+        .category-btn {
+            padding: 15px 25px;
             font-size: 18px;
-            margin: 10px;
-            cursor: pointer;
+            font-weight: bold;
             border: none;
             border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             color: white;
-            transition: background-color 0.3s;
         }
-        #yesBtn {
-            background-color: #007bff;
+        #social-btn {
+            background-color: #1877f2; /* 蓝色 */
         }
-        #yesBtn:hover {
-            background-color: #0056b3;
+        #social-btn:hover {
+            background-color: #166fe5;
         }
-        #noBtn {
-            background-color: #6c757d;
+        #campus-btn {
+            background-color: #36a420; /* 绿色 */
         }
-        #noBtn:hover {
-            background-color: #5a6268;
+        #campus-btn:hover {
+            background-color: #2b8c1a;
         }
-        #report-container {
-            margin-top: 30px;
-            text-align: left;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+
+        /* --- 新闻列表界面 --- */
+        #news-container {
+            display: none; /* 默认隐藏 */
+            padding: 20px;
         }
-        ul {
-            list-style-type: none;
+        .news-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        #news-category-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1c1e21;
+        }
+        #back-btn {
+            background: #e4e6eb;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #headline-list {
+            list-style: none;
             padding: 0;
+            margin: 0;
         }
-        li {
-            background-color: #ffffff;
-            margin: 8px 0;
-            padding: 15px;
+        .headline-item {
+            padding: 15px 10px;
+            border-bottom: 1px solid #e9ebee;
+            cursor: pointer;
+        }
+        .headline-item:hover {
+            background-color: #f5f6f7;
+        }
+        .headline-item a {
+            text-decoration: none;
+            color: #0d1d3a;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .headline-meta {
+            font-size: 12px;
+            color: #606770;
+            margin-top: 8px;
+        }
+        .headline-meta .source {
+            font-weight: bold;
+        }
+
+        /* --- 新闻内容模态框 --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            line-height: 1.6;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
         }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #modal-headline {
+            font-size: 22px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        #modal-body {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #333;
+        }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
+
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>是否查询今日Gene报？</h2>
-        <div>
-            <button id="yesBtn" class="button">是</button>
-            <button id="noBtn" class="button">否</button>
+    <div class="main-container">
+
+        <!-- 初始选择界面 -->
+        <div id="selection-container">
+            <h1>Gene新闻头条</h1>
+            <div class="category-buttons">
+                <button id="social-btn" class="category-btn">查看社会新闻</button>
+                <button id="campus-btn" class="category-btn">查看Gene高新闻</button>
+            </div>
         </div>
 
-        <!-- 新闻报道将在这里显示 -->
-        <div id="report-container"></div>
+        <!-- 新闻列表界面 -->
+        <div id="news-container">
+            <div class="news-header">
+                <h2 id="news-category-title"></h2>
+                <button id="back-btn">&larr; 返回</button>
+            </div>
+            <ul id="headline-list">
+                <!-- JS动态生成新闻列表 -->
+            </ul>
+        </div>
+
     </div>
 
+    <!-- 新闻内容模态框 -->
+    <div id="news-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal-btn" class="close-button">&times;</span>
+            <h2 id="modal-headline"></h2>
+            <p id="modal-body"></p>
+        </div>
+    </div>
+
+
     <script>
-        // 100条+沙雕新闻豪华版数据库
-        const newsReports = [
-            // 平均两天 & 三言两语 (CP)
-            "三言两语对平均两天说“你是我生命中的光”，平均两天回应：“谢谢，我是节能灯，不是很亮还省电。”",
-            "三言两语学电影主角玩壁咚，结果用力过猛把墙捶出个洞，手卡在里面，最后还是平均两天打电话叫的消防队。",
-            "三言两语深情款款地问平均两天：“我的缺点多吗？”平均两天回答：“不多，就跟天上的星星一样。”三言两语窃喜，又听他说：“但是天一亮就都看不见了。”",
-            "三言两语重金买下陨石送给平均两天，说“这是我对你天外飞仙般的爱”，平均两天检测后发现是工地水泥块。",
-            "三言两语抱怨自己又老了一岁，平均两天安慰道：“没事，你的智商和相貌看起来都像是不过生日的。”",
-            "三言两语想在情人节给平均两天惊喜，把自己打包成礼物，结果快递员送错地址，被作为一天签收。",
-            "平均两天发现三言两语在偷看自己的日记，三言两语辩称：“我想走进你的内心世界。”平均两天：“我的内心世界不欢迎没文化的人。”",
-            "三言两语为耍帅尝试单手开法拉利，结果把车开进了喷泉池，平均两天路过并拍照留念。",
-            "三言两语在KTV为平均两天高歌一曲，平均两天听后点评：“唱得很好，下次不许唱了。”",
-            "平均两天新买一个智能音箱，三言两语玩了一下午，音箱现在只会回答：“对不起，这个问题超出了我的知识范围，建议问问平均两天。”",
-            "三言两语想纹身“爱人平均两天”，结果纹身师手抖，纹成了“爱人平均两天半”。",
-            "三言两语问平均两天：“如果我掉进河里，你会怎么办？”平均两天：“我会拿出手机，录下这历史性的一刻。”",
-            "三言两语吹嘘自己能倒背圆周率，平均两天让他背，他回答“率周圆”，然后声称这是古法背诵。",
-            "三言两语想学吉他弹唱给平均两天听，练习一个月后成功把吉他当成了鼓来敲。",
+    // --- 新闻数据库 ---
+    const socialNews = [
+        { headline: "惊！男子街头耍帅玩壁咚，竟将公共墙壁捶出窟窿！", story: "三言两语学电影主角玩壁咚，结果用力过猛把墙捶出个洞，手卡在里面，最后还是平均两天打电话叫的消防队。" },
+        { headline: "UFO目击事件？警方介入调查，真相竟是邻家脸盆！", story: "作为一天报警称有UFO降临他家阳台，警察赶到后发现是邻居吹落的塑料脸盆。" },
+        { headline: "离奇失踪案告破，男子称“走进内心世界”，竟是在偷看日记。", story: "平均两天发现三言两语在偷看自己的日记，三言两语辩称：“我想走进你的内心世界。”平均两天：“我的内心世界不欢迎没文化的人。”" },
+        { headline: "男子自称外星后裔，每日向天空“发功”，竟引来蝙蝠围观。", story: "作为一天坚信自己是外星人后代，每日对着天空发送脑电波，试图联系母星，结果引来了附近的蝙蝠群。" },
+        { headline: "“最强大脑”竟是我自己？男子凭微表情破解密室，顺手修好店内电路。", story: "平均两天在作业领域新开的密室里，仅用三分钟就破解了所有谜题，并顺手修复了店里的一个电路故障。" },
+        { headline: "浪漫求爱变“行为艺术”，法拉利惊现喷泉池，车主情绪稳定。", story: "三言两语为耍帅尝试单手开法拉利，结果把车开进了喷泉池，平均两天路过并拍照留念。" },
+        { headline: "天降横财还是天降横祸？男子捡到钱包，打开一看竟是自己的。", story: "小松鼠在路上捡到一个钱包，打开一看是自己的，原来是裤子破了个洞。" },
+        { headline: "匪夷所思！两人为“心中有海”理念，客厅开趴，双双中暑送医。", story: "两人为证明“只要心中有海，哪里都是马尔代夫”，在客厅沙滩裤配墨镜，结果被平均两天当成中暑送医。" },
+        { headline: "健身房变“社交场”，跑步机上的汗水，不如美女教练的微笑。", story: "彬彬有礼和三言两语去健身房，彬彬有礼在跑步，三言两语在和每个路过的美女教练聊天。" },
+        { headline: "特异功能还是恶作剧？男子声称能与植物交流，仙人掌表示“很扎手”。", story: "作为一天声称自己能和植物交流，三言两语让他翻译一下仙人掌的话，作为一天说：“它说它很扎手。”" },
+        { headline: "男子雨中漫步寻浪漫，不料地滑上演“速度与激情”，终点是泥坑。", story: "三言两语试图在雨中上演浪漫情节，结果因为地滑，一路滑进了泥坑。" },
+        { headline: "KTV歌神诞生？一曲高歌后，竟收到“下次不许唱了”的最高评价。", story: "三言两语在KTV为平均两天高歌一曲，平均两天听后点评：“唱得很好，下次不许唱了。”" },
+        { headline: "“随手关灯”好习惯引风波，男子竟将整条街路灯关闭。", story: "彬彬有礼看到“随手关灯”的标语，把整条街的路灯都关了，被社区管理员追着教育。" },
+        { headline: "读心术大师街头献艺，为何屡猜屡错？大师回应：是你们的心不按套路出牌！", story: "三言两语声称自己会读心术，结果每次都猜错，他解释说：“是你们的心不按套路出牌。”" }
+    ];
 
-            // 彬彬有礼 & 小松鼠 (CP)
-            "彬彬有礼为防止小松鼠摔倒，在他前面铺了地毯，结果小松鼠被地毯绊倒，摔得更惨，还把彬彬有礼一起带倒了。",
-            "小松鼠送给彬彬有礼一盆“开运竹”，结果三天内竹子枯死，彬彬有礼的手机掉进马桶，家里的猫还学会了后空翻。",
-            "彬彬有礼教小松鼠做饭，小松鼠严格按照菜谱“盐少许”，于是只放了一粒盐。",
-            "小松鼠参加公司年会抽中头奖“与彬彬有礼共进晚餐”，结果当晚因为太倒霉，餐厅停电，两人摸黑吃了一顿。",
-            "彬彬有礼带小松鼠去游乐园，小松鼠玩所有项目都遇到设备故障，最后连旋转木马都把他甩了出去。",
-        "小松鼠为给彬彬有礼一个惊喜，躲在门后，结果彬彬有礼推门太用力，直接把小松鼠撞晕。",
-            "彬彬有礼送给小松鼠一个“逢考必过”护身符，结果小松鼠在考试当天因为护身符太显眼被当作作弊处理。",
-            "小松鼠想给彬彬有礼表演徒手劈砖，砖没断，自己的手肿了，还需要彬彬有礼帮他冰敷。",
-            "彬彬有礼和小松鼠玩捉迷藏，小松鼠因为太倒霉，藏身的衣柜门自动上锁，最后被困了一整天。",
-            "小松鼠给彬彬有礼的盆栽浇水，错把可乐当成营养液，第二天盆栽长出了一朵“泡泡花”。",
+    const campusNews = [
+        { headline: "校园情圣深情告白，竟被学霸女友比作“节能灯”！", story: "三言两语对平均两天说“你是我生命中的光”，平均两天回应：“谢谢，我是节能灯，不是很亮还省电。”" },
+        { headline: "天选倒霉蛋？小松鼠抽中头奖与校草共进晚餐，餐厅竟停电！", story: "小松鼠参加学校年会抽中头奖“与彬彬有礼共进晚餐”，结果当晚因为太倒霉，餐厅停电，两人摸黑吃了一顿。" },
+        { headline: "“知识胶囊”风靡校园，吃下就能变学霸？真相令人哭笑不得。", story: "作业领域推出“知识胶囊”，声称吃下就能掌握一门外语，平均两天买后发现胶囊里是写着“好好学习”的纸条。" },
+        { headline: "父子情深！学渣儿子考零分，父亲竟称其“上升空间巨大”！", story: "小松鼠考试得了0分，三言两语安慰道：“没事儿子，这说明你还有巨大的上升空间，不像爸爸，已经帅得没有提升空间了。”" },
+        { headline: "校园厨神大赛惊现“分子料理”，选手竟端上一盘冰块！", story: "彬彬有礼参加厨艺比赛，主题是“分子料理”，他呈上了一盘冰块，并解释说：“这是固态的水分子。”" },
+        { headline: "校园魔术表演变“灾难现场”，鸽子飞了，帽子着火了！", story: "小松鼠苦练魔术想给彬彬有礼惊喜，表演当天因运气太差，鸽子飞走了，帽子也着火了。" },
+        { headline: "“逢考必过”护身符竟成作弊工具？学渣小松鼠欲哭无泪。", story: "彬彬有礼送给小松鼠一个“逢考必过”护身符，结果小松鼠在考试当天因为护身符太显眼被当作作弊处理。" },
+        { headline: "宿舍爆米花派对失控，厨房惨变“米花海洋”！", story: "三言两语和作为一天试图在宿舍自制爆米花，结果错估了玉米的数量，整个厨房都被爆米花淹没。" },
+        { headline: "为练平衡感，男生宿舍内转篮球，结果把自己转晕了。", story: "彬彬有礼为练习平衡感，尝试在指尖转篮球，结果篮球没转起来，自己转了三圈后晕倒了。" },
+        { headline: "学霸的神操作！平均两天用三句话，竟让推销员买下自己的盆栽。", story: "平均两天仅用三句话就说服了喋喋不休的推销员，并成功把自家的盆栽卖给了他。" },
+        { headline: "宿舍辩论赛：太阳与月亮哪个重要？两男子为此大打出手！", story: "小松鼠与三言两语为“太阳和月亮哪个更重要”大打出手，双双认为自己的观点照亮了对方的盲区。" },
+        { headline: "天才发明家？作为一天发明五米长吸管，竟意外钓上金鱼！", story: "作为一天发明了“懒人喝水器”，一个长达五米的吸管，结果三言两语试用时因为吸力太大把金鱼也吸了进来。" },
+        { headline: "损友的“爱”！彬彬有礼白衬衫惨遭涂鸦，竟机智化解。", story: "三言两语在彬彬有礼的白衬衫上画了一只乌龟，彬彬有礼发现后，淡定地在乌龟旁边画了个“第一名”的奖杯。" },
+        { headline: "最“尬”搭讪现场：为吸引女生注意，男子当场表演B-Box被保安带走。", story: "三言两语因插队被劝阻，竟当场表演B-Box以示抗议，被保安拖走时节奏仍未乱。" }
+    ];
+
+    // --- DOM 元素获取 ---
+    const selectionContainer = document.getElementById('selection-container');
+    const newsContainer = document.getElementById('news-container');
+    const socialBtn = document.getElementById('social-btn');
+    const campusBtn = document.getElementById('campus-btn');
+    const backBtn = document.getElementById('back-btn');
+    const headlineList = document.getElementById('headline-list');
+    const newsCategoryTitle = document.getElementById('news-category-title');
+    const modal = document.getElementById('news-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalHeadline = document.getElementById('modal-headline');
+    const modalBody = document.getElementById('modal-body');
+
+    // --- 函数定义 ---
+    function showNews(category, categoryName) {
+        // 1. 切换界面
+        selectionContainer.style.display = 'none';
+        newsContainer.style.display = 'block';
+        newsCategoryTitle.textContent = categoryName;
+
+        // 2. 清空旧列表
+        headlineList.innerHTML = '';
+
+        // 3. 随机选取5条新闻
+        const shuffled = category.sort(() => 0.5 - Math.random());
+        const selectedNews = shuffled.slice(0, 5);
+
+        // 4. 生成新闻列表
+        selectedNews.forEach(news => {
+            const listItem = document.createElement('li');
+            listItem.className = 'headline-item';
             
-            // 平均两天 & 作业领域 (CB)
-            "作业领域开卖“空气罐头”，号称采集自富士山顶，平均两天检测后发现成分与三言两语的更衣室空气高度相似。",
-            "作业领域推出“知识胶囊”，声称吃下就能掌握一门外语，平均两天买后发现胶囊里是写着“好好学习”的纸条。",
-            "作业领域举办“一元夺宝”活动，奖品是平均两天的签名照一张，平均两天自己花一块钱抽中后当场撕毁。",
-            "作业领域卖“防脱洗发水”，平均两天指出其成分只是普通肥皂水，作业领域辩称：“只要心中无脱发，头发自然在。”",
-            "平均两天在作业领域新开的密室里，仅用三分钟就破解了所有谜题，并顺手修复了店里的一个电路故障。",
-            "作业领域声称自己的“好运手机壳”能带来财运，平均两天购买后第二天手机就收到诈骗短信，并成功反骗了骗子一笔钱。",
-            "作业领域举办“最强大脑”比赛，平均两天仅凭观察选手的微表情就猜出了所有答案，主持人当场愣住。",
-            "作业领域卖“隐形墨水”，平均两天买回去写了一篇论文，第二天发现墨水真的太隐形，一个字都看不见了。",
+            // 模拟时间和来源
+            const randomMinutes = Math.floor(Math.random() * 59);
+            const fakeTime = `${randomMinutes}分钟前`;
             
-            // 三言两语 & 小松鼠 (CB)
-            "父亲三言两语教小松鼠开车，让他“跟着感觉走”，结果小松鼠开进了田里，感觉很泥泞。",
-            "三言两语告诉小松鼠“钱不是万能的”，然后向小松鼠借钱去约会，被拒后感叹“没钱是万万不能的”。",
-            "小松鼠问三言两语如何才能受欢迎，三言两语说：“学我”，第二天小松鼠因在街上对美女抛媚眼被报警处理。",
-            "三言两语带小松鼠去海边，说要教他“男子汉的浪漫”，结果两人都在沙滩上睡着，被涨潮的海水淹到脚踝。",
-            "小松鼠的宠物仓鼠丢了，三言两语安慰他说“没关系，爸爸再给你买一个”，结果买回来一只豚鼠。",
-            "三言两语为锻炼小松鼠的胆量，把他关在厕所里讲鬼故事，结果自己先被镜子里的自己吓到。",
-            "小松鼠的作业是“我的父亲”，他写“我的父亲三言两语很帅”，老师评语：“请不要在作业里说谎。”",
+            listItem.innerHTML = `
+                <a>${news.headline}</a>
+                <div class="headline-meta">
+                    <span class="source">Gene新闻</span> &bull; <span>${fakeTime}</span>
+                </div>
+            `;
 
-            // 三言两语 & 作为一天 (CB)
-            "作为一天声称自己能和植物交流，三言两语让他翻译一下仙人掌的话，作为一天说：“它说它很扎手。”",
-            "三言两语和作为一天组队参加吃辣比赛，赛后两人不是因为辣，而是因为抢厕所打了起来。",
-            "作为一天发明了“懒人喝水器”，一个长达五米的吸管，结果三言两语试用时因为吸力太大把金鱼也吸了进来。",
-            "两人为证明“只要心中有海，哪里都是马尔代夫”，在客厅沙滩裤配墨镜，结果被平均两天当成中暑送医。",
-            "作为一天说服三言两语，说用酱油洗头能让头发更黑，结果两人顶着一头酱油味被蜜蜂追了三条街。",
-            "三言两语和作为一天试图在家自制爆米花，结果错估了玉米的数量，整个厨房都被爆米花淹没。",
-            "作为一天研究星座，告诉三言两语他本周有桃花运，三言两语信以为真，结果只收到一堆卖花的传单。",
-
-            // 三言两语 & 彬彬有礼 (CB)
-            "彬彬有礼新买的限量版球鞋被三言两语试穿，结果因为脚太大撑坏了，三言两语辩称是在帮他“开开鞋”。",
-            "三言两语和彬彬有礼比赛闭气，结果双双睡着，醒来已是第二天。",
-            "彬彬有礼劝三言两语戒掉熬夜，三言两语回答：“我不是在熬夜，我是在陪月亮聊天。”",
-            "三言两语在彬彬有礼的白衬衫上画了一只乌龟，彬彬有礼发现后，淡定地在乌龟旁边画了个“第一名”的奖杯。",
-            "彬彬有礼和三言两语去健身房，彬彬有礼在跑步，三言两语在和每个路过的美女教练聊天。",
-            
-            // 个人沙雕新闻
-            "小松鼠去寺庙求签，摇了半天掉出来一个“谢谢品尝”的瓶盖。",
-            "作为一天报警称有UFO降临他家阳台，警察赶到后发现是邻居吹落的塑料脸盆。",
-            "彬彬有礼为练习平衡感，尝试在指尖转篮球，结果篮球没转起来，自己转了三圈后晕倒了。",
-            "作业领域开发了一款“代你挨骂”APP，用户下单后，他会打电话过去用最专业的态度替客户挨骂。",
-            "作为一天坚信自己能用意念移动物体，对着电视机遥控器发功一小时，最后发现是遥控器没电了。",
-            "小松鼠买彩票中了末等奖，去兑奖的路上因为太激动，把彩票当成纸巾擦鼻涕了。",
-            "彬彬有礼参加厨艺比赛，主题是“分子料理”，他呈上了一盘冰块，并解释说：“这是固态的水分子。”",
-            "三言两语声称自己会读心术，结果每次都猜错，他解释说：“是你们的心不按套路出牌。”",
-            "作业领域新店开业搞促销，“买一送一”，送的是老板的飞吻一个。",
-            "作为一天为了体验飞翔的感觉，在身上绑满羽毛从床上跳下，成功体验了“脸先着地”。",
-            "小松鼠在路上捡到一个钱包，打开一看是自己的，原来是裤子破了个洞。",
-        "彬彬有礼在街上被认错成明星，他将错就错签了名，结果对方说：“我们是催债的。”",
-            "平均两天仅用一个面包就成功诱拐了作为一天养的鸽子，并给它改名叫“烤翅”。",
-            "作业领域因出售“后悔药”（其实是维生素C片）被投诉，他辩称：“你吃了后悔了，就说明药效达到了。”",
-            "作为一天在沙滩上埋下“时间胶囊”，约定十年后打开，结果第二天就被涨潮冲走了。",
-            "小松鼠尝试网上“一根面”挑战，结果面条甩出去挂在了天花板的风扇上。",
-            "三言两语在愚人节假装失忆，结果被平均两天告知他欠自己一百万，他只好又“恢复记忆”了。",
-            "彬彬有礼为了耍帅学转笔，结果把笔转进了正在喝水的平均两天的杯子里。",
-            "作为一天认为多吃核桃能补脑，于是连壳一起吃，认为这样效果加倍。",
-            "作业领域推出“陪聊”业务，因聊天内容过于敷衍被差评，他的回评是：“好的呢。”",
-            "小松鼠因为走路同手同脚，被机器人展会的工作人员误当成最新款机器人抬了进去。",
-            "平均两天仅用三句话就说服了喋喋不休的推销员，并成功把自家的盆栽卖给了他。",
-            "三言两语试图在雨中上演浪漫情节，结果因为地滑，一路滑进了泥坑。",
-            "彬彬有礼看到“随手关灯”的标语，把整条街的路灯都关了，被社区管理员追着教育。",
-            "作为一天在网上发帖“我是谁，我从哪里来”，收到最多点赞的回复是：“你是作为一天，你从你妈那里来。”"
-        ];
-
-        const yesButton = document.getElementById('yesBtn');
-        const noButton = document.getElementById('noBtn');
-        const reportContainer = document.getElementById('report-container');
-        const buttonContainer = yesButton.parentElement;
-
-        yesButton.addEventListener('click', function() {
-            const shuffled = newsReports.sort(() => 0.5 - Math.random());
-            // 每次随机挑选3条进行展示
-            const numToSelect = Math.min(3, newsReports.length);
-            let selectedReports = shuffled.slice(0, numToSelect);
-            
-            let reportHtml = '<h3>今日Gene报精选：</h3><ul>';
-            selectedReports.forEach(report => {
-                reportHtml += `<li>${report}</li>`;
+            // 5. 为每条新闻添加点击事件，以显示模态框
+            listItem.addEventListener('click', () => {
+                showModal(news.headline, news.story);
             });
-            reportHtml += '</ul>';
-            
-            reportContainer.innerHTML = reportHtml;
-            buttonContainer.style.display = 'none';
-        });
 
-        noButton.addEventListener('click', function() {
-            reportContainer.innerHTML = "<p>操作已取消。</p>";
-            buttonContainer.style.display = 'none';
+            headlineList.appendChild(listItem);
         });
+    }
+
+    function showModal(headline, story) {
+        modalHeadline.textContent = headline;
+        modalBody.textContent = story;
+        modal.style.display = 'block';
+    }
+
+    function hideModal() {
+        modal.style.display = 'none';
+    }
+
+    function showSelection() {
+        newsContainer.style.display = 'none';
+        selectionContainer.style.display = 'block';
+    }
+
+    // --- 事件监听 ---
+    socialBtn.addEventListener('click', () => showNews(socialNews, '社会新闻'));
+    campusBtn.addEventListener('click', () => showNews(campusNews, 'Gene高新闻'));
+    backBtn.addEventListener('click', showSelection);
+    closeModalBtn.addEventListener('click', hideModal);
+
+    // 点击模态框外部区域也可关闭
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) {
+            hideModal();
+        }
+    });
+
     </script>
 
 </body>
