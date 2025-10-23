@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 这行很重要，确保在手机上显示正常 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gene报查询</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 90%;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #444;
+        }
+        .button {
+            padding: 12px 25px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        #yesBtn {
+            background-color: #007bff;
+        }
+        #yesBtn:hover {
+            background-color: #0056b3;
+        }
+        #noBtn {
+            background-color: #6c757d;
+        }
+        #noBtn:hover {
+            background-color: #5a6268;
+        }
+        #report-container {
+            margin-top: 30px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #ffffff;
+            margin: 8px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>是否查询今日Gene报？</h2>
+        <div>
+            <button id="yesBtn" class="button">是</button>
+            <button id="noBtn" class="button">否</button>
+        </div>
+
+        <!-- 新闻报道将在这里显示 -->
+        <div id="report-container"></div>
+    </div>
+
+    <script>
+        // 1. 你的文本库 (现在存储在JavaScript中)
+        const newsReports = [
+            "基因编辑技术CRISPR-Cas9在最新研究中显示出治疗遗传性失明的巨大潜力。",
+            "科学家发现一种与长寿相关的特定基因变体，为抗衰老研究开辟了新途径。",
+            "一项大规模基因组测序项目揭示，现代人类基因中仍含有少量尼安德特人DNA。",
+            "新型基因疗法在临床试验中成功逆转了儿童的罕见免疫缺陷症。",
+            "通过对古代DNA的分析，研究人员绘制出了猛犸象的完整基因图谱。",
+            "合成生物学取得新突破，人造基因回路首次在活细胞内实现稳定运行。",
+            "研究发现，肠道微生物的基因组成对人类情绪和行为有显著影响。",
+            "表观遗传学研究表明，生活方式和环境因素可以改变基因的表达方式，并遗传给后代。"
+        ];
+
+        // 2. 获取页面上的元素
+        const yesButton = document.getElementById('yesBtn');
+        const noButton = document.getElementById('noBtn');
+        const reportContainer = document.getElementById('report-container');
+        const buttonContainer = yesButton.parentElement;
+
+        // 3. 为“是”按钮添加点击事件
+        yesButton.addEventListener('click', function() {
+            // -- 随机排序数组并挑选前几条的算法 --
+            // 创建一个打乱顺序的新闻数组副本
+            const shuffled = newsReports.sort(() => 0.5 - Math.random());
+            // 挑选2条，如果总数少于2条，则全选
+            const numToSelect = Math.min(2, newsReports.length);
+            let selectedReports = shuffled.slice(0, numToSelect);
+            
+            // -- 生成要显示的HTML内容 --
+            let reportHtml = '<h3>今日Gene报精选：</h3><ul>';
+            selectedReports.forEach(report => {
+                reportHtml += `<li>${report}</li>`;
+            });
+            reportHtml += '</ul>';
+            
+            // -- 将内容显示在页面上 --
+            reportContainer.innerHTML = reportHtml;
+            
+            // 查询后隐藏按钮，避免重复点击
+            buttonContainer.style.display = 'none';
+        });
+
+        // 4. 为“否”按钮添加点击事件
+        noButton.addEventListener('click', function() {
+            // 尝试关闭当前浏览器窗口/标签页
+            // 注意：出于安全原因，现代浏览器可能会阻止脚本关闭不是由它自己打开的窗口
+            window.close();
+            // 如果无法关闭，可以显示一条消息
+            reportContainer.innerHTML = "<p>操作已取消。</p>";
+            buttonContainer.style.display = 'none';
+        });
+    </script>
+
+</body>
+</html>
